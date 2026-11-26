@@ -1,6 +1,7 @@
+import EntregaTarjeta from './entrega/EntregaTarjeta'
 import { obtenerPatron, sonIsomorfas } from './patrones/patrones'
 
-/* Algunas letras del enunciado son cirílicas y se ven iguales a las latinas. */
+// Uso escapes para conservar las letras del enunciado.
 const primeraPalabra = 'a\u0430bb\u0441cdd\u0441c'
 const segundaPalabra = 'abcd\u0430bcd\u0441c'
 
@@ -24,6 +25,7 @@ export default function App() {
         </dl>
         <p>¿Comparten el mismo patrón? <strong>{String(mismoPatron)}</strong></p>
       </section>
+      <EntregaTarjeta />
     </main>
   )
 }
