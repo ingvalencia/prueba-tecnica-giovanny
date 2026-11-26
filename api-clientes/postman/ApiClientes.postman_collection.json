@@ -1,0 +1,308 @@
+{
+  "info": {
+    "name": "API Clientes - Prueba técnica",
+    "description": "Ejecuta la colección en orden con la API local en ejecución. Utiliza datos ficticios y genera números de cuenta y tarjeta para cada corrida.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "01 Alta de cliente",
+      "request": {
+        "method": "POST",
+        "url": "{{urlApi}}/api/cliente",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreCompleto\": \"Maria Lopez\",\n  \"fechaNacimiento\": \"1990-12-15\",\n  \"numeroCuenta\": \"{{numeroCuenta}}\",\n  \"numeroTarjeta\": \"{{numeroTarjeta}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const sufijo = Date.now().toString() + Math.floor(Math.random() * 100).toString().padStart(2, \"0\");",
+              "pm.collectionVariables.unset(\"idCliente\");",
+              "pm.collectionVariables.set(\"numeroCuenta\", \"00\" + sufijo);",
+              "pm.collectionVariables.set(\"numeroTarjeta\", \"01\" + sufijo);",
+              "pm.collectionVariables.set(\"otraCuenta\", \"10\" + sufijo);",
+              "pm.collectionVariables.set(\"otraTarjeta\", \"11\" + sufijo);"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));",
+              "",
+              "pm.test(\"Devuelve el ID y la ubicación del recurso\", () => {",
+              "    const id = pm.response.json().id;",
+              "    pm.expect(Number.isInteger(id) && id > 0).to.equal(true);",
+              "    pm.expect(pm.response.headers.get(\"Location\")).to.match(new RegExp(\"/api/clientes/\" + id + \"$\"));",
+              "    pm.collectionVariables.set(\"idCliente\", id);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 Consulta del cliente registrado",
+      "request": {
+        "method": "GET",
+        "url": "{{urlApi}}/api/clientes/{{idCliente}}"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 200\", () => pm.response.to.have.status(200));",
+              "",
+              "pm.test(\"Devuelve el mismo cliente y solo los últimos dígitos de la tarjeta\", () => {",
+              "    const cliente = pm.response.json();",
+              "    pm.expect(cliente.id).to.equal(Number(pm.collectionVariables.get(\"idCliente\")));",
+              "    pm.expect(cliente.nombreCompleto).to.equal(\"Maria Lopez\");",
+              "    pm.expect(cliente.fechaNacimiento).to.equal(\"1990-12-15\");",
+              "    pm.expect(cliente.numeroCuenta).to.equal(pm.collectionVariables.get(\"numeroCuenta\"));",
+              "    pm.expect(cliente.ultimosDigitosTarjeta).to.equal(pm.collectionVariables.get(\"numeroTarjeta\").slice(-4));",
+              "    pm.expect(cliente).not.to.have.property(\"numeroTarjeta\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 Cuenta duplicada",
+      "request": {
+        "method": "POST",
+        "url": "{{urlApi}}/api/cliente",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreCompleto\": \"Maria Lopez\",\n  \"fechaNacimiento\": \"1990-12-15\",\n  \"numeroCuenta\": \"{{numeroCuenta}}\",\n  \"numeroTarjeta\": \"{{otraTarjeta}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+              "",
+              "pm.test(\"Identifica la cuenta duplicada\", () => {",
+              "    pm.expect(pm.response.json().mensaje).to.include(\"cuenta\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 Tarjeta duplicada",
+      "request": {
+        "method": "POST",
+        "url": "{{urlApi}}/api/cliente",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreCompleto\": \"Maria Lopez\",\n  \"fechaNacimiento\": \"1990-12-15\",\n  \"numeroCuenta\": \"{{otraCuenta}}\",\n  \"numeroTarjeta\": \"{{numeroTarjeta}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 409\", () => pm.response.to.have.status(409));",
+              "",
+              "pm.test(\"Identifica la tarjeta duplicada\", () => {",
+              "    pm.expect(pm.response.json().mensaje).to.include(\"tarjeta\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "05 Menor de edad",
+      "request": {
+        "method": "POST",
+        "url": "{{urlApi}}/api/cliente",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreCompleto\": \"Maria Lopez\",\n  \"fechaNacimiento\": \"{{fechaMenor}}\",\n  \"numeroCuenta\": \"{{otraCuenta}}\",\n  \"numeroTarjeta\": \"{{otraTarjeta}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const hoy = new Date();",
+              "const fecha = new Date(Date.UTC(hoy.getUTCFullYear() - 10, 0, 1));",
+              "pm.variables.set(\"fechaMenor\", fecha.toISOString().slice(0, 10));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 400\", () => pm.response.to.have.status(400));",
+              "",
+              "pm.test(\"Explica que el cliente debe ser mayor de edad\", () => {",
+              "    pm.expect(pm.response.json().mensaje).to.include(\"18\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "06 Cumple 18 años hoy",
+      "request": {
+        "method": "POST",
+        "url": "{{urlApi}}/api/cliente",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombreCompleto\": \"Maria Lopez\",\n  \"fechaNacimiento\": \"{{fechaCumple18}}\",\n  \"numeroCuenta\": \"{{otraCuenta}}\",\n  \"numeroTarjeta\": \"{{otraTarjeta}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const hoy = new Date();",
+              "const anio = hoy.getUTCFullYear() - 18;",
+              "const mes = hoy.getUTCMonth();",
+              "const diasDelMes = new Date(Date.UTC(anio, mes + 1, 0)).getUTCDate();",
+              "const fecha = new Date(Date.UTC(anio, mes, Math.min(diasDelMes, hoy.getUTCDate())));",
+              "pm.variables.set(\"fechaCumple18\", fecha.toISOString().slice(0, 10));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 201\", () => pm.response.to.have.status(201));"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "07 Cliente inexistente",
+      "request": {
+        "method": "GET",
+        "url": "{{urlApi}}/api/clientes/2147483647"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"HTTP 404\", () => pm.response.to.have.status(404));",
+              "",
+              "pm.test(\"Indica que el cliente no existe\", () => {",
+              "    pm.expect(pm.response.json().mensaje).to.equal(\"Cliente no encontrado.\");",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "urlApi",
+      "value": "http://127.0.0.1:5080"
+    },
+    {
+      "key": "idCliente",
+      "value": ""
+    },
+    {
+      "key": "numeroCuenta",
+      "value": ""
+    },
+    {
+      "key": "numeroTarjeta",
+      "value": ""
+    },
+    {
+      "key": "otraCuenta",
+      "value": ""
+    },
+    {
+      "key": "otraTarjeta",
+      "value": ""
+    }
+  ]
+}
