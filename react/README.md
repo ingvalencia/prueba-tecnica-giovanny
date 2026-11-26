@@ -1,6 +1,6 @@
 # Ejercicio práctico React
 
-Proyecto de React con Vite y TypeScript.
+Proyecto de React con Vite y TypeScript. Verificado con Node.js `v22.12.0`.
 
 ## Ejecutar en PowerShell
 
@@ -47,3 +47,9 @@ viaje completo, con el piso de salida y el de llegada incluidos.
 
 `useElevator` programa un salto cada 400 ms con `useEffect` y cancela el
 temporizador al desmontarse. Para reproducir el ejemplo, elige 5, 9 y 4.
+
+## Evidencias
+
+- [Patrones de posiciones](evidencias/01-patrones.png). Las palabras del enunciado devuelven `false`.
+- [Domicilio antes de validar](evidencias/02-domicilio-pendiente.png) y [después de validar](evidencias/03-domicilio-validado.png). El código postal `03100` conserva el cero inicial.
+- [Elevador en movimiento](evidencias/04-elevador-en-movimiento.png) e [historial completo](evidencias/05-elevador-historial.png). El recorrido se reproduce al elegir 5, 9 y 4.
