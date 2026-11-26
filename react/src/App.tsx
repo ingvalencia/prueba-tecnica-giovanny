@@ -1,4 +1,5 @@
 import EntregaTarjeta from './entrega/EntregaTarjeta'
+import PanelElevador from './elevador/PanelElevador'
 import { obtenerPatron, sonIsomorfas } from './patrones/patrones'
 
 // Uso escapes para conservar las letras del enunciado.
@@ -26,6 +27,7 @@ export default function App() {
         <p>¿Comparten el mismo patrón? <strong>{String(mismoPatron)}</strong></p>
       </section>
       <EntregaTarjeta />
+      <PanelElevador />
     </main>
   )
 }

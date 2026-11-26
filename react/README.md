@@ -38,3 +38,12 @@ acciones. El ejemplo en pantalla usa el store de domicilio.
 `scoreVerificado` empieza en `null` mientras está pendiente. El código postal
 se guarda como texto para conservar ceros iniciales. El botón valida el
 formato de cinco dígitos y editar el campo deja la validación pendiente.
+
+## Elevador inteligente
+
+El elevador arranca en el piso 1. Elige un destino del 1 al 10 y espera a
+que termine el viaje para elegir otro. El historial agrega una petición por
+viaje completo, con el piso de salida y el de llegada incluidos.
+
+`useElevator` programa un salto cada 400 ms con `useEffect` y cancela el
+temporizador al desmontarse. Para reproducir el ejemplo, elige 5, 9 y 4.
